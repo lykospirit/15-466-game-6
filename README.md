@@ -1,8 +1,8 @@
-# (TODO: your game's title)
+# The Lighted Path
 
-Author: (TODO: your name)
+Author: Colin Gay
 
-Design: (TODO: In two sentences or fewer, describe what is new and interesting about your game.)
+Design: Use the lights to navigate your way to the objective.
 
 Screen Shot:
 
@@ -10,10 +10,13 @@ Screen Shot:
 
 How To Play:
 
-(TODO: describe the controls and (if needed) goals/strategy.)
+Move around the map by staying in the lit regions.
+The objective is a blue ball somewhere in the map: reach it to win.
+WASD to move, LMB and scroll wheel to control the camera.
+R to reset, ESC to quit.
 
 Sources:
 
-(TODO: fill in information about the sources of any **artwork** or **sounds** you used in the game that you did not create yourself. Feel free to also credit yourself for things you did make.)
+All assets used are rendered using Blender v2.8. Credit to Jim McCann for base 3D assets and Blender pipeline. Level design by Colin Gay.
 
 This game was built with [NEST](NEST.md).

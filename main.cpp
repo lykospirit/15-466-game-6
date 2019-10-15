@@ -3,6 +3,7 @@
 
 //Starting mode:
 #include "demo_menu.hpp"
+#include "DemoLightingForwardMode.hpp"
 
 //Deal with calling resource loading functions:
 #include "Load.hpp"
@@ -99,7 +100,7 @@ int main(int argc, char **argv) {
 	call_load_functions();
 
 	//------------ create game mode + make current --------------
-	Mode::set_current(demo_menu);
+  Mode::set_current(game_mode);
 
 	//------------ main loop ------------
 
@@ -187,7 +188,7 @@ int main(int argc, char **argv) {
 		}
 
 		{ //(3) call the current mode's "draw" function to produce output:
-		
+
 			Mode::current->draw(drawable_size);
 		}
 

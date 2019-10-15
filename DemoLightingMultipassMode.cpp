@@ -36,7 +36,7 @@ Load< Scene > spheres_scene_multipass(LoadTagLate, []() -> Scene const * {
 		pipeline.set_uniforms = [roughness](){
 			glUniform1f(basic_material_program->ROUGHNESS_float, roughness);
 		};
-		
+
 	});
 });
 
@@ -60,11 +60,12 @@ DemoLightingMultipassMode::~DemoLightingMultipassMode() {
 bool DemoLightingMultipassMode::handle_event(SDL_Event const &evt, glm::uvec2 const &window_size) {
 	//----- leave to menu -----
 	if (evt.type == SDL_KEYDOWN && evt.key.keysym.sym == SDLK_ESCAPE) {
-		Mode::set_current(demo_menu);
-		return true;
+		Mode::set_current(nullptr);
+		return false;
 	}
 	//----- trackball-style camera controls -----
 	if (evt.type == SDL_MOUSEBUTTONDOWN) {
+    camera.first = false;
 		if (evt.button.button == SDL_BUTTON_LEFT) {
 			//when camera is upside-down at rotation start, azimuth rotation should be reversed:
 			// (this ends up feeling more intuitive)
@@ -72,47 +73,94 @@ bool DemoLightingMultipassMode::handle_event(SDL_Event const &evt, glm::uvec2 co
 			return true;
 		}
 	}
-	if (evt.type == SDL_MOUSEMOTION) {
+	if (!camera.game_over && evt.type == SDL_MOUSEMOTION) {
 		if (evt.motion.state & SDL_BUTTON(SDL_BUTTON_LEFT)) {
+      camera.first = false;
 			//figure out the motion (as a fraction of a normalized [-a,a]x[-1,1] window):
-			glm::vec2 delta;
+      glm::vec2 delta;
 			delta.x = evt.motion.xrel / float(window_size.x) * 2.0f;
-			delta.x *= float(window_size.y) / float(window_size.x);
+      delta.x *= float(window_size.y) / float(window_size.x);
 			delta.y = evt.motion.yrel / float(window_size.y) * -2.0f;
 
-			if (SDL_GetModState() & KMOD_SHIFT) {
-				//shift: pan
+			//tumble
+			camera.azimuth -= 3.0f * delta.x * (camera.flip_x ? -1.0f : 1.0f);
+			camera.elevation -= 3.0f * delta.y;
 
-				glm::mat3 frame = glm::mat3_cast(scene_camera->transform->rotation);
-				camera.target -= frame[0] * (delta.x * camera.radius) + frame[1] * (delta.y * camera.radius);
-			} else {
-				//no shift: tumble
+			camera.azimuth /= 2.0f * 3.1415926f;
+			camera.azimuth -= std::round(camera.azimuth);
+			camera.azimuth *= 2.0f * 3.1415926f;
 
-				camera.azimuth -= 3.0f * delta.x * (camera.flip_x ? -1.0f : 1.0f);
-				camera.elevation -= 3.0f * delta.y;
+			camera.elevation /= 2.0f * 3.1415926f;
+			camera.elevation -= std::round(camera.elevation);
+			camera.elevation *= 2.0f * 3.1415926f;
 
-				camera.azimuth /= 2.0f * 3.1415926f;
-				camera.azimuth -= std::round(camera.azimuth);
-				camera.azimuth *= 2.0f * 3.1415926f;
-
-				camera.elevation /= 2.0f * 3.1415926f;
-				camera.elevation -= std::round(camera.elevation);
-				camera.elevation *= 2.0f * 3.1415926f;
-
-				//std::cout << camera.azimuth / 3.1415926f * 180.0f << " / " << camera.elevation / 3.1415926f * 180.0f << std::endl;
-			}
+			//std::cout << camera.azimuth / 3.1415926f * 180.0f << " / " << camera.elevation / 3.1415926f * 180.0f << std::endl;
 			return true;
 		}
 	}
-	//mouse wheel: dolly
+
+  if (evt.type == SDL_KEYDOWN){
+    camera.first = false;
+		if (evt.key.keysym.scancode == SDL_SCANCODE_W) {
+      camera.move_up = true;
+		} else if (evt.key.keysym.scancode == SDL_SCANCODE_A) {
+      camera.move_left = true;
+		} else if (evt.key.keysym.scancode == SDL_SCANCODE_S) {
+      camera.move_down = true;
+		} else if (evt.key.keysym.scancode == SDL_SCANCODE_D) {
+      camera.move_right = true;
+		} else if (evt.key.keysym.scancode == SDL_SCANCODE_R) {
+      // reset game
+      camera.radius = 20.0f;
+      camera.azimuth = 0.5f * 3.1415926f;
+      camera.elevation = 0.5f * 3.1415926f;
+      camera.target = glm::vec3(0.0f,10.0f,0.0f);
+      camera.flip_x = false;
+      camera.move_up = false;
+      camera.move_left = false;
+      camera.move_down = false;
+      camera.move_right = false;
+      camera.is_reset = true;
+      camera.game_over = false;
+      camera.win = false;
+    }
+	} else if (evt.type == SDL_KEYUP){
+		if (evt.key.keysym.scancode == SDL_SCANCODE_W) {
+      camera.move_up = false;
+		} else if (evt.key.keysym.scancode == SDL_SCANCODE_A) {
+      camera.move_left = false;
+		} else if (evt.key.keysym.scancode == SDL_SCANCODE_S) {
+      camera.move_down = false;
+		} else if (evt.key.keysym.scancode == SDL_SCANCODE_D) {
+      camera.move_right = false;
+		}
+	}
+
+	//mouse wheel: dolly (directly move along z-axis)
 	if (evt.type == SDL_MOUSEWHEEL) {
-		camera.radius *= std::pow(0.5f, 0.1f * evt.wheel.y);
-		if (camera.radius < 1e-1f) camera.radius = 1e-1f;
-		if (camera.radius > 1e6f) camera.radius = 1e6f;
+    camera.first = false;
+    glm::mat3 frame = glm::mat3_cast(scene_camera->transform->rotation);
+    camera.target -= frame[2] * (0.05f * evt.wheel.y * camera.radius);
 		return true;
 	}
-	
+
 	return false;
+}
+
+void DemoLightingMultipassMode::update(float elapsed) {
+  if (!camera.game_over) {
+    glm::vec2 delta = glm::vec2(0.0f,0.0f);
+    if (camera.move_up)    { delta.y -= 1.0f; }
+    if (camera.move_down)  { delta.y += 1.0f; }
+    if (camera.move_left)  { delta.x += 1.0f; }
+    if (camera.move_right) { delta.x -= 1.0f; }
+    if (glm::length(delta) > 0.0f) {
+      // pan camera
+      delta = glm::normalize(delta) * camera.move_speed;
+    	glm::mat3 frame = glm::mat3_cast(scene_camera->transform->rotation);
+    	camera.target -= frame[0] * (delta.x * camera.radius) + frame[1] * (delta.y * camera.radius);
+    }
+  }
 }
 
 void DemoLightingMultipassMode::draw(glm::uvec2 const &drawable_size) {

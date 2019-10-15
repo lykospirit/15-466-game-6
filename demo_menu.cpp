@@ -13,6 +13,7 @@ Load< SpriteAtlas > trade_font_atlas(LoadTagDefault, []() -> SpriteAtlas const *
 });
 
 std::shared_ptr< MenuMode > demo_menu;
+std::shared_ptr< DemoLightingForwardMode > game_mode;
 
 Load< void > load_demo_menu(LoadTagDefault, [](){
 	std::vector< MenuMode::Item > items;
@@ -48,4 +49,9 @@ Load< void > load_demo_menu(LoadTagDefault, [](){
 	demo_menu->right_select = &trade_font_atlas->lookup("<");
 	demo_menu->right_select_offset = glm::vec2(0.0f + 3.0f, 0.0f);
 	demo_menu->select_bounce_amount = 5.0f;
+
+  game_mode = std::make_shared<DemoLightingForwardMode>();
+  game_mode->atlas = trade_font_atlas;
+	game_mode->view_min = glm::vec2(0.0f, 0.0f);
+	game_mode->view_max = glm::vec2(320.0f, 200.0f);
 });

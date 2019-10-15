@@ -36,8 +36,13 @@ struct BasicMaterialForwardProgram {
 	GLuint LIGHT_ENERGY_vec3_array = -1U;
 	GLuint LIGHT_CUTOFF_float_array = -1U;
 
+  //  player uniforms:
+  GLuint PLAYER_CENTER_uvec2 = -1U;
+  GLuint PLAYER_RADIUS_uint = -1U;
+  GLuint PLAYER_COLOR_vec4 = -1U;
+
 	enum : uint32_t { MaxLights = 40 };
-	
+
 	//Textures:
 	//TEXTURE0 - texture that is accessed by TexCoord
 };

@@ -10,6 +10,7 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+#include <algorithm>
 #include <iostream>
 
 GLuint spheres_for_basic_material_deferred_object = 0;
@@ -51,7 +52,7 @@ struct FB {
 	GLuint position_tex = 0;
 	GLuint normal_roughness_tex = 0;
 	GLuint albedo_tex = 0;
-	
+
 	//output image gets written to this texture:
 	GLuint output_tex = 0;
 
@@ -169,7 +170,7 @@ void DemoLightingDeferredMode::draw(glm::uvec2 const &drawable_size) {
 
 	glm::mat4 world_to_clip = scene_camera->make_projection() * scene_camera->transform->make_world_to_local();
 	glm::vec3 eye = scene_camera->transform->make_local_to_world()[3];
-	
+
 	//--- draw geometry to framebuffer ---
 
 	glBindFramebuffer(GL_FRAMEBUFFER, fb.objects_fb);
@@ -304,7 +305,7 @@ void DemoLightingDeferredMode::draw(glm::uvec2 const &drawable_size) {
 	GL_ERRORS();
 
 	//--- copy lights fb info to screen ---
-	
+
 	glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT);
 

@@ -151,7 +151,7 @@ void MenuMode::draw(glm::uvec2 const &drawable_size) {
 					draw_sprites.draw(*right_select, glm::vec2(right + bounce, item.at.y) + right_select_offset, item.scale, right_select_tint);
 				}
 			}
-			
+
 		}
 	} //<-- gets drawn here!
 

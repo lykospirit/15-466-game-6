@@ -231,4 +231,3 @@ BasicMaterialDeferredLightProgram::~BasicMaterialDeferredLightProgram() {
 	glDeleteProgram(program);
 	program = 0;
 }
-

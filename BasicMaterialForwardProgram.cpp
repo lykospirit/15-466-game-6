@@ -70,6 +70,9 @@ BasicMaterialForwardProgram::BasicMaterialForwardProgram() {
 		"uniform vec3 LIGHT_DIRECTION[" + std::to_string(MaxLights) + "];\n"
 		"uniform vec3 LIGHT_ENERGY[" + std::to_string(MaxLights) + "];\n"
 		"uniform float LIGHT_CUTOFF[" + std::to_string(MaxLights) + "];\n"
+    "uniform uvec2 PLAYER_CENTER;\n"
+    "uniform uint PLAYER_RADIUS;\n"
+    "uniform vec4 PLAYER_COLOR;\n"
 		"uniform vec3 EYE;\n"
 		"in vec3 position;\n"
 		"in vec3 normal;\n"
@@ -104,7 +107,8 @@ BasicMaterialForwardProgram::BasicMaterialForwardProgram() {
 		"			e = (dot(n,l) * 0.5 + 0.5) * ENERGY;\n"
 		"		} else if (TYPE == 2) { //spot light \n"
 		"			l = (LOCATION - position);\n"
-		"			float dis2 = dot(l,l);\n"
+		// "			float dis2 = dot(l,l);\n"
+    "     float dis2 = 20.0;\n"
 		"			l = normalize(l);\n"
 		"			h = normalize(l+v);\n"
 		"			float nl = max(0.0, dot(n, l)) / max(1.0, dis2);\n"
@@ -124,7 +128,11 @@ BasicMaterialForwardProgram::BasicMaterialForwardProgram() {
 		"		;\n"
 		"		total += e*reflectance;\n"
 		"	}\n"
-		"	fragColor = vec4(total, albedo.a);\n"
+    " fragColor = vec4(total, albedo.a);\n"
+    " if (length(gl_FragCoord.xy - PLAYER_CENTER) <= PLAYER_RADIUS) {\n"
+    "	  if (length(fragColor.xyz) < 0.2f) { fragColor = vec4(1.0f,0.0f,0.0f,1.0f); }\n"
+    "   else { fragColor = PLAYER_COLOR; }\n"
+    " }\n"
 		"}\n"
 	);
 	//As you can see above, adjacent strings in C/C++ are concatenated.
@@ -153,6 +161,9 @@ BasicMaterialForwardProgram::BasicMaterialForwardProgram() {
 	LIGHT_ENERGY_vec3_array = glGetUniformLocation(program, "LIGHT_ENERGY");
 	LIGHT_CUTOFF_float_array = glGetUniformLocation(program, "LIGHT_CUTOFF");
 
+  PLAYER_CENTER_uvec2 = glGetUniformLocation(program, "PLAYER_CENTER");
+  PLAYER_RADIUS_uint = glGetUniformLocation(program, "PLAYER_RADIUS");
+  PLAYER_COLOR_vec4 = glGetUniformLocation(program, "PLAYER_COLOR");
 
 	GLuint TEX_sampler2D = glGetUniformLocation(program, "TEX");
 
@@ -168,4 +179,3 @@ BasicMaterialForwardProgram::~BasicMaterialForwardProgram() {
 	glDeleteProgram(program);
 	program = 0;
 }
-
